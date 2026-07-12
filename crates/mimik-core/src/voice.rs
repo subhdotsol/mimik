@@ -28,8 +28,19 @@ pub enum Effect {
     Reverb { room_size: f32, mix: f32, decay_ms: f32 },
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct DspPreset {
+    pub effects: Vec<Effect>,
+}
+
 pub fn load_manifest(dir: &Path) -> Result<VoiceManifest> {
     let text = fs::read_to_string(dir.join("manifest.toml"))
         .with_context(|| format!("No manifest found at {}", dir.display()))?;
     toml::from_str(&text).context("Invalid voice manifest")
+}
+
+pub fn load_dsp_preset(dir: &Path) -> Result<DspPreset> {
+    let text = fs::read_to_string(dir.join("preset.toml"))
+        .with_context(|| format!("No preset found at {}", dir.display()))?;
+    toml::from_str(&text).context("Invalid voice preset")
 }
