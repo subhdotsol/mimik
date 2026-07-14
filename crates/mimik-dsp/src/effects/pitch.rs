@@ -46,6 +46,12 @@ impl PitchShifter {
         self.pitch_ratio
     }
 
+    /// Raise or lower formant frequencies independently of pitch.
+    /// A ratio > 1.0 brightens the voice (smaller perceived vocal tract).
+    pub fn set_formant_scale(&mut self, ratio: f64) {
+        unsafe { ffi::rubberband_live_set_formant_scale(self.state, ratio) };
+    }
+
     /// Shift exactly `block_size()` samples. Panics in debug if lengths mismatch.
     pub fn shift(&mut self, input: &[f32], output: &mut [f32]) {
         debug_assert_eq!(input.len(), self.block_size);
