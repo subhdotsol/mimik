@@ -53,6 +53,69 @@ impl SampleProcessor for HighPassFilter {
     }
 }
 
+// ── Compressor with attack/release ───────────────────────────────────────────
+
+pub struct SmoothCompressor {
+    threshold: f32,
+    slope: f32,
+    attack_coeff: f32,
+    release_coeff: f32,
+    envelope: f32,
+}
+
+impl SmoothCompressor {
+    pub fn new(
+        threshold_db: f32,
+        ratio: f32,
+        attack_ms: f32,
+        release_ms: f32,
+        sample_rate: f32,
+    ) -> Self {
+        Self {
+            threshold: db_to_linear(threshold_db),
+            slope: 1.0 - 1.0 / ratio,
+            attack_coeff: 1.0 - (-2.2 / (sample_rate * attack_ms / 1000.0)).exp(),
+            release_coeff: 1.0 - (-2.2 / (sample_rate * release_ms / 1000.0)).exp(),
+            envelope: 0.0,
+        }
+    }
+}
+
+impl SampleProcessor for SmoothCompressor {
+    fn process(&mut self, sample: f32) -> f32 {
+        let level = sample.abs();
+        let coeff = if level > self.envelope { self.attack_coeff } else { self.release_coeff };
+        self.envelope += (level - self.envelope) * coeff;
+
+        let gain = if self.envelope > self.threshold {
+            let over_db = 20.0 * (self.envelope / self.threshold).log10();
+            db_to_linear(-over_db * self.slope)
+        } else {
+            1.0
+        };
+
+        sample * gain
+    }
+}
+
+// ── Hard limiter ─────────────────────────────────────────────────────────────
+
+pub struct LimiterDb {
+    ceiling: f32,
+}
+
+impl LimiterDb {
+    pub fn new(ceiling_db: f32) -> Self {
+        Self { ceiling: db_to_linear(ceiling_db) }
+    }
+}
+
+impl SampleProcessor for LimiterDb {
+    fn process(&mut self, sample: f32) -> f32 {
+        sample.clamp(-self.ceiling, self.ceiling)
+    }
+}
+
 // ── Peaking EQ (biquad, Audio EQ Cookbook) ───────────────────────────────────
 
 pub struct PeakingEq {
