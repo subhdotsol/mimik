@@ -218,6 +218,44 @@ impl SampleProcessor for Chorus {
     }
 }
 
+// ── De-esser ─────────────────────────────────────────────────────────────────
+// Detects sibilance via a high-pass copy and applies smoothed gain reduction
+// to the full signal when the high-frequency level exceeds the threshold.
+
+pub struct DeEsser {
+    detector: HighPassFilter,
+    threshold: f32,
+    gain: f32,
+    attack: f32,
+    release: f32,
+}
+
+impl DeEsser {
+    pub fn new(frequency_hz: f32, threshold_db: f32, sample_rate: f32) -> Self {
+        Self {
+            detector: HighPassFilter::new(frequency_hz, sample_rate),
+            threshold: db_to_linear(threshold_db),
+            gain: 1.0,
+            attack: 1.0 - (-2.2_f32 / (sample_rate * 0.001)).exp(),
+            release: 1.0 - (-2.2_f32 / (sample_rate * 0.05)).exp(),
+        }
+    }
+}
+
+impl SampleProcessor for DeEsser {
+    fn process(&mut self, sample: f32) -> f32 {
+        let detected = self.detector.process(sample).abs();
+        let target = if detected > self.threshold {
+            (self.threshold / detected).powf(0.75)
+        } else {
+            1.0
+        };
+        let coeff = if target < self.gain { self.attack } else { self.release };
+        self.gain += (target - self.gain) * coeff;
+        sample * self.gain
+    }
+}
+
 // ── Peaking EQ (biquad, Audio EQ Cookbook) ───────────────────────────────────
 
 pub struct PeakingEq {
