@@ -256,6 +256,92 @@ impl SampleProcessor for DeEsser {
     }
 }
 
+// ── Reverb (Schroeder) ───────────────────────────────────────────────────────
+// Four parallel comb filters → two series allpass filters. Classic Schroeder
+// topology. decay_ms sets the approximate RT60; room_size scales the delays.
+
+struct CombFilter {
+    buf: Vec<f32>,
+    pos: usize,
+    fb: f32,
+}
+
+impl CombFilter {
+    fn new(delay: usize, fb: f32) -> Self {
+        Self { buf: vec![0.0; delay.max(2)], pos: 0, fb }
+    }
+    fn tick(&mut self, x: f32) -> f32 {
+        let out = self.buf[self.pos];
+        self.buf[self.pos] = x + out * self.fb;
+        self.pos = (self.pos + 1) % self.buf.len();
+        out
+    }
+}
+
+struct AllpassFilter {
+    buf: Vec<f32>,
+    pos: usize,
+    fb: f32,
+}
+
+impl AllpassFilter {
+    fn new(delay: usize, fb: f32) -> Self {
+        Self { buf: vec![0.0; delay.max(2)], pos: 0, fb }
+    }
+    fn tick(&mut self, x: f32) -> f32 {
+        let b = self.buf[self.pos];
+        let out = -x + b;
+        self.buf[self.pos] = x + b * self.fb;
+        self.pos = (self.pos + 1) % self.buf.len();
+        out
+    }
+}
+
+pub struct Reverb {
+    combs: [CombFilter; 4],
+    allpasses: [AllpassFilter; 2],
+    mix: f32,
+}
+
+impl Reverb {
+    pub fn new(room_size: f32, mix: f32, decay_ms: f32, sample_rate: f32) -> Self {
+        let scale = sample_rate / 44100.0;
+        let size_factor = 0.5 + room_size.clamp(0.0, 1.0) * 0.5;
+
+        let d = |base: f32| ((base * scale * size_factor) as usize).max(2);
+        let fb = |delay: usize| {
+            let rt60 = (decay_ms / 1000.0).max(0.001);
+            (10f32.powf(-3.0 * delay as f32 / (sample_rate * rt60))).min(0.99)
+        };
+
+        let d0 = d(1557.0); let d1 = d(1617.0);
+        let d2 = d(1491.0); let d3 = d(1422.0);
+
+        Self {
+            combs: [
+                CombFilter::new(d0, fb(d0)),
+                CombFilter::new(d1, fb(d1)),
+                CombFilter::new(d2, fb(d2)),
+                CombFilter::new(d3, fb(d3)),
+            ],
+            allpasses: [
+                AllpassFilter::new(d(225.0), 0.7),
+                AllpassFilter::new(d(556.0), 0.7),
+            ],
+            mix,
+        }
+    }
+}
+
+impl SampleProcessor for Reverb {
+    fn process(&mut self, sample: f32) -> f32 {
+        let wet = self.combs.iter_mut().map(|c| c.tick(sample)).sum::<f32>() * 0.25;
+        let wet = self.allpasses[0].tick(wet);
+        let wet = self.allpasses[1].tick(wet);
+        sample * (1.0 - self.mix) + wet * self.mix
+    }
+}
+
 // ── Peaking EQ (biquad, Audio EQ Cookbook) ───────────────────────────────────
 
 pub struct PeakingEq {
