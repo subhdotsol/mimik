@@ -116,6 +116,108 @@ impl SampleProcessor for LimiterDb {
     }
 }
 
+// ── Vibrato ──────────────────────────────────────────────────────────────────
+// Modulated delay line: LFO varies the read position, producing subtle pitch
+// wavering. depth_cents controls peak pitch deviation; mix blends dry/wet.
+
+pub struct Vibrato {
+    buffer: Vec<f32>,
+    write: usize,
+    size: usize,
+    center: f32,
+    depth: f32,
+    phase: f32,
+    rate: f32,
+    mix: f32,
+}
+
+impl Vibrato {
+    pub fn new(rate_hz: f32, depth_cents: f32, mix: f32, sample_rate: f32) -> Self {
+        let depth = depth_cents * 0.5;
+        let center = depth + 2.0;
+        let size = ((center * 2.0 + 4.0) as usize).max(8).next_power_of_two();
+        Self {
+            buffer: vec![0.0; size],
+            write: 0,
+            size,
+            center,
+            depth,
+            phase: 0.0,
+            rate: TAU * rate_hz / sample_rate,
+            mix,
+        }
+    }
+}
+
+impl SampleProcessor for Vibrato {
+    fn process(&mut self, sample: f32) -> f32 {
+        self.buffer[self.write] = sample;
+
+        let delay = self.center + self.depth * self.phase.sin();
+        let d_int = delay as usize;
+        let frac = delay - d_int as f32;
+        let ra = (self.write + self.size - d_int) % self.size;
+        let rb = (self.write + self.size - d_int - 1) % self.size;
+        let wet = self.buffer[ra] * (1.0 - frac) + self.buffer[rb] * frac;
+
+        self.write = (self.write + 1) % self.size;
+        self.phase = (self.phase + self.rate).rem_euclid(TAU);
+
+        sample * (1.0 - self.mix) + wet * self.mix
+    }
+}
+
+// ── Chorus ───────────────────────────────────────────────────────────────────
+// Same structure as vibrato but driven by depth_ms, giving a thickening/
+// doubling effect when mixed at low levels.
+
+pub struct Chorus {
+    buffer: Vec<f32>,
+    write: usize,
+    size: usize,
+    center: f32,
+    depth: f32,
+    phase: f32,
+    rate: f32,
+    mix: f32,
+}
+
+impl Chorus {
+    pub fn new(rate_hz: f32, depth_ms: f32, mix: f32, sample_rate: f32) -> Self {
+        let depth = depth_ms * sample_rate / 1000.0;
+        let center = depth + 2.0;
+        let size = ((center * 2.0 + 4.0) as usize).max(8).next_power_of_two();
+        Self {
+            buffer: vec![0.0; size],
+            write: 0,
+            size,
+            center,
+            depth,
+            phase: 0.0,
+            rate: TAU * rate_hz / sample_rate,
+            mix,
+        }
+    }
+}
+
+impl SampleProcessor for Chorus {
+    fn process(&mut self, sample: f32) -> f32 {
+        self.buffer[self.write] = sample;
+
+        let delay = self.center + self.depth * self.phase.sin();
+        let d_int = delay as usize;
+        let frac = delay - d_int as f32;
+        let ra = (self.write + self.size - d_int) % self.size;
+        let rb = (self.write + self.size - d_int - 1) % self.size;
+        let wet = self.buffer[ra] * (1.0 - frac) + self.buffer[rb] * frac;
+
+        self.write = (self.write + 1) % self.size;
+        self.phase = (self.phase + self.rate).rem_euclid(TAU);
+
+        sample * (1.0 - self.mix) + wet * self.mix
+    }
+}
+
 // ── Peaking EQ (biquad, Audio EQ Cookbook) ───────────────────────────────────
 
 pub struct PeakingEq {
