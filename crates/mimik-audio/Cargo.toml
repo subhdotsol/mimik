@@ -8,3 +8,5 @@ license.workspace = true
 anyhow.workspace = true
 cpal.workspace = true
 ringbuf.workspace = true
+mimik-core = { path = "../mimik-core" }
+mimik-dsp = { path = "../mimik-dsp" }
