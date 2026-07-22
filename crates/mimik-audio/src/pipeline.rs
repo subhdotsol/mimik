@@ -9,7 +9,7 @@ use ringbuf::{
     traits::{Consumer, Producer, Split},
     HeapRb,
 };
-use std::{path::Path, time::Duration};
+use std::{fs, path::Path, time::Duration};
 
 pub const PID_FILE: &str = "/tmp/mimik.pid";
 
@@ -191,6 +191,7 @@ pub fn run(voice: Option<&str>) -> Result<()> {
             _input_stream.play()?;
             _output_stream.play()?;
 
+            write_pid(voice_name)?;
             println!("Mimik is live [clean]");
             println!("Speak into your microphone. Ctrl+C to stop.");
             loop { std::thread::sleep(Duration::from_secs(1)); }
@@ -273,9 +274,15 @@ pub fn run(voice: Option<&str>) -> Result<()> {
             _input_stream.play()?;
             _output_stream.play()?;
 
+            write_pid(voice_name)?;
             println!("Mimik is live [{}]", voice_name);
             println!("Speak into your microphone. Ctrl+C to stop.");
             loop { std::thread::sleep(Duration::from_secs(1)); }
         }
     }
+}
+
+fn write_pid(voice: &str) -> Result<()> {
+    let content = format!("{}\n{}\n", std::process::id(), voice);
+    fs::write(PID_FILE, content).context("Could not write PID file")
 }
