@@ -1,0 +1,7 @@
+[[effects]]
+type = "pitch_shift"
+semitones = 7.0
+
+[[effects]]
+type = "limiter"
+ceiling_db = -1.5
