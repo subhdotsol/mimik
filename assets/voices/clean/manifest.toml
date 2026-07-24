@@ -1,0 +1,5 @@
+id = "clean"
+name = "Clean"
+version = "0.1.0"
+engine = "built-in"
+description = "Passthrough — your voice unchanged"
