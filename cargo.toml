@@ -1,0 +1,27 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "crates/mimik-cli",
+    "crates/mimik-core",
+    "crates/mimik-audio",
+    "crates/mimik-dsp",
+    "crates/mimik-pack",
+    "crates/mimik-registry",
+]
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+license = "MIT"
+
+[workspace.dependencies]
+anyhow = "1"
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+toml = "1.1.4" #A native Rust encoder and decoder of TOML-formatted files and streams.
+clap = { version = "4", features = ["derive"] } #command line parser
+cpal = "0.18.1" #low level cross platform I/O library
+ringbuf = "0.5.1" #Lock-free SPSC FIFO ring buffer with direct access to inner data
+tracing = "0.1" #Application-level tracing for Rust.
+tracing-subscriber = "0.3" #Utilities for implementing and composing `tracing` subscribers.
