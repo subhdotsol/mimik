@@ -1,5 +1,5 @@
-pub fn run() {
-    println!("Available audio devices:");
-    println!("Input: MacBook Microphone");
-    println!("Output: BlackHole 2ch");
+use anyhow::Result;
+
+pub fn run() -> Result<()> {
+    mimik_audio::devices::print_devices()
 }

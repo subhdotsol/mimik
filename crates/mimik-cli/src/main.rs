@@ -10,7 +10,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Devices => commands::devices::run(),
+        Commands::Devices => commands::devices::run()?,
 
         Commands::Live { voice } => commands::live::run(voice),
 
