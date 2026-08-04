@@ -16,6 +16,6 @@ path = "src/main.rs"
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
-mimik-audio = { path = "../mimik-audio" }
-mimik-core = { path = "../mimik-core" }
-mimik-dsp = { path = "../mimik-dsp" }
+mimik-audio = { path = "../mimik-audio", version = "0.1.0" }
+mimik-core = { path = "../mimik-core", version = "0.1.0" }
+mimik-dsp = { path = "../mimik-dsp", version = "0.1.0" }
