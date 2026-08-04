@@ -2,7 +2,7 @@
 resolver = "2"
 
 members = [
-    "crates/mimik-cli",
+    "crates/mimik",
     "crates/mimik-core",
     "crates/mimik-audio",
     "crates/mimik-dsp",
@@ -14,6 +14,7 @@ members = [
 edition = "2024"
 version = "0.1.0"
 license = "MIT"
+authors = ["Subhajit Chaudhury <subhajitchaudhury05@gmail.com>"]
 
 [workspace.dependencies]
 anyhow = "1"
@@ -24,4 +25,5 @@ clap = { version = "4", features = ["derive"] } #command line parser
 cpal = "0.18.1" #low level cross platform I/O library
 ringbuf = "0.5.1" #Lock-free SPSC FIFO ring buffer with direct access to inner data
 tracing = "0.1" #Application-level tracing for Rust.
-tracing-subscriber = "0.3" #Utilities for implementing and composing `tracing` subscribers.
+tracing-subscriber = "0.3"
+dirs = "5"

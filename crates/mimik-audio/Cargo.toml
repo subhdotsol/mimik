@@ -3,6 +3,10 @@ name = "mimik-audio"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
+authors.workspace = true
+description = "Real-time audio I/O pipeline for mimik built on cpal"
+keywords = ["audio", "cpal", "voice-changer", "pipeline"]
+categories = ["multimedia::audio"]
 
 [dependencies]
 anyhow.workspace = true

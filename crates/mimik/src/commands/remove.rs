@@ -1,11 +1,9 @@
 use anyhow::{Context, Result};
-use mimik_core::voice::load_manifest;
-use std::{fs, path::Path};
-
-const VOICES_DIR: &str = "assets/voices";
+use mimik_core::voice::{load_manifest, voices_dir};
+use std::fs;
 
 pub fn run(voice: &str) -> Result<()> {
-    let dir = Path::new(VOICES_DIR).join(voice);
+    let dir = voices_dir().join(voice);
 
     if !dir.exists() {
         anyhow::bail!(

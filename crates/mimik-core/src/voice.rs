@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use serde::Deserialize;
-use std::{fs, path::Path};
+use std::{fs, path::{Path, PathBuf}};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct VoiceManifest {
@@ -31,6 +31,23 @@ pub enum Effect {
 #[derive(Debug, Clone, Deserialize)]
 pub struct DspPreset {
     pub effects: Vec<Effect>,
+}
+
+/// Returns the directory where voices are stored.
+///
+/// During development, if `assets/voices` exists relative to the working
+/// directory it is used directly. After `cargo install`, voices live under
+/// the platform data directory so the binary works regardless of where it
+/// is invoked from.
+pub fn voices_dir() -> PathBuf {
+    let local = PathBuf::from("assets/voices");
+    if local.exists() {
+        return local;
+    }
+    dirs::data_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join("mimik")
+        .join("voices")
 }
 
 pub fn load_manifest(dir: &Path) -> Result<VoiceManifest> {

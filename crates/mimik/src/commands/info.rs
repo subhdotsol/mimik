@@ -1,8 +1,7 @@
-use mimik_core::voice::{load_dsp_preset, load_manifest, Effect};
-use std::path::Path;
+use mimik_core::voice::{load_dsp_preset, load_manifest, voices_dir, Effect};
 
 pub fn run(voice: &str) {
-    let voice_dir = Path::new("assets/voices").join(voice);
+    let voice_dir = voices_dir().join(voice);
 
     let manifest = match load_manifest(&voice_dir) {
         Ok(m) => m,

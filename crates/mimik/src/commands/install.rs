@@ -1,8 +1,6 @@
 use anyhow::{Context, Result};
-use mimik_core::voice::load_manifest;
+use mimik_core::voice::{load_manifest, voices_dir};
 use std::{fs, path::Path};
-
-const VOICES_DIR: &str = "assets/voices";
 
 pub fn run(path: &str) -> Result<()> {
     let src = Path::new(path);
@@ -20,7 +18,7 @@ pub fn run(path: &str) -> Result<()> {
     let manifest = load_manifest(src)
         .context("Invalid voice pack: missing or malformed manifest.toml")?;
 
-    let dest = Path::new(VOICES_DIR).join(&manifest.id);
+    let dest = voices_dir().join(&manifest.id);
 
     if dest.exists() {
         anyhow::bail!(

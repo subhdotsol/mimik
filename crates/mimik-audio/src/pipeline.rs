@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use mimik_core::voice::{load_dsp_preset, load_manifest, Effect};
+use mimik_core::voice::{load_dsp_preset, load_manifest, voices_dir, Effect};
 use mimik_dsp::effects::{
     Chorus, DeEsser, HighPassFilter, LimiterDb, NoiseGateDb, PeakingEq, PitchShifter,
     Reverb, SampleProcessor, SmoothCompressor, Vibrato,
@@ -9,11 +9,9 @@ use ringbuf::{
     traits::{Consumer, Producer, Split},
     HeapRb,
 };
-use std::{fs, path::Path, time::Duration};
+use std::{fs, time::Duration};
 
 pub const PID_FILE: &str = "/tmp/mimik.pid";
-
-const VOICES_DIR: &str = "assets/voices";
 
 fn build_sample_chains(
     effects: &[Effect],
@@ -95,7 +93,7 @@ pub fn run(voice: Option<&str>) -> Result<()> {
     let preset = if voice_name == "clean" {
         None
     } else {
-        let voice_dir = Path::new(VOICES_DIR).join(voice_name);
+        let voice_dir = voices_dir().join(voice_name);
         let manifest = load_manifest(&voice_dir)
             .with_context(|| {
                 format!("Voice '{voice_name}' not found. Run 'mimik list' to see installed voices.")
