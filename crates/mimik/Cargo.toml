@@ -4,6 +4,7 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 authors.workspace = true
+repository.workspace = true
 description = "Real-time programmable voice changer for macOS"
 keywords = ["voice-changer", "audio", "dsp", "cli", "pitch-shift"]
 categories = ["command-line-utilities", "multimedia::audio"]

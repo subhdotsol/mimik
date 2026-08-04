@@ -4,6 +4,7 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 authors.workspace = true
+repository.workspace = true
 description = "Real-time audio I/O pipeline for mimik built on cpal"
 keywords = ["audio", "cpal", "voice-changer", "pipeline"]
 categories = ["multimedia::audio"]

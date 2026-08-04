@@ -4,6 +4,7 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 authors.workspace = true
+repository.workspace = true
 description = "Core types, voice manifest schema, and preset definitions for mimik"
 keywords = ["voice", "audio", "preset", "dsp"]
 categories = ["multimedia::audio", "data-structures"]
