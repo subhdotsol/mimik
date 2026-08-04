@@ -1,14 +1,15 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+mod chain;
+mod compressor;
+mod engine;
+mod gain;
+mod limiter;
+mod noise_gate;
+mod processor;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub use chain::Chain;
+pub use compressor::Compressor;
+pub use engine::Engine;
+pub use gain::Gain;
+pub use limiter::Limiter;
+pub use noise_gate::NoiseGate;
+pub use processor::Processor;
