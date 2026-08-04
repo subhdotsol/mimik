@@ -12,7 +12,7 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Devices => commands::devices::run()?,
 
-        Commands::Live { voice } => commands::live::run(voice),
+        Commands::Live { voice } => commands::live::run(voice)?,
 
         Commands::List => commands::list::run(),
 
